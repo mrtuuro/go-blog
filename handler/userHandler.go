@@ -3,12 +3,66 @@ package handler
 import (
 	"blog/database"
 	"blog/models"
+	"blog/utils"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
+
+// Login
+func Login(ctx *fiber.Ctx) error {
+	collection := database.Mg.Db.Collection("users")
+	user := new(models.LoginUser)
+	dbUser := new(models.DbUser)
+	if err := ctx.BodyParser(user); err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+	filter := bson.D{{Key: "email", Value: user.Email}}
+
+	if err := collection.FindOne(ctx.Context(), filter).Decode(dbUser); err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+
+	userPass := []byte(user.Password)
+	dbPass := []byte(dbUser.Password)
+
+	passErr := bcrypt.CompareHashAndPassword(dbPass, userPass)
+	if passErr != nil {
+		fmt.Println(2, passErr)
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+	jwtToken, err := utils.GenerateJWT()
+	if err != nil {
+		fmt.Println(1, err)
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(jwtToken)
+}
+
+// Register
+func Register(ctx *fiber.Ctx) error {
+	collection := database.Mg.Db.Collection("users")
+	user := new(models.CreateUser)
+	if err := ctx.BodyParser(user); err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+	user.Password = utils.HashPassword([]byte(user.Password))
+	insertedUser, err := collection.InsertOne(ctx.Context(), user)
+	if err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+	filter := bson.D{{Key: "_id", Value: insertedUser.InsertedID}}
+	createdUser := collection.FindOne(ctx.Context(), filter)
+	returnUser := &models.User{}
+	if err := createdUser.Decode(returnUser); err != nil {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+	return ctx.Status(http.StatusOK).JSON(returnUser)
+}
 
 // Create user
 func CreateUser(ctx *fiber.Ctx) error {
