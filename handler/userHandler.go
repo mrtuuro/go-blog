@@ -31,12 +31,11 @@ func Login(ctx *fiber.Ctx) error {
 
 	passErr := bcrypt.CompareHashAndPassword(dbPass, userPass)
 	if passErr != nil {
-		fmt.Println(2, passErr)
-		return ctx.SendStatus(http.StatusBadRequest)
+		return ctx.Status(http.StatusBadRequest).SendString("Password and email does not match!")
 	}
-	jwtToken, err := utils.GenerateJWT()
+
+	jwtToken, err := utils.GenerateJWT(dbUser)
 	if err != nil {
-		fmt.Println(1, err)
 		return ctx.SendStatus(http.StatusBadRequest)
 	}
 
@@ -66,6 +65,13 @@ func Register(ctx *fiber.Ctx) error {
 
 // Create user
 func CreateUser(ctx *fiber.Ctx) error {
+
+	authErr := utils.VerifyAuthentication(ctx)
+	if authErr != nil {
+		return ctx.Status(fiber.StatusUnauthorized).
+			JSON(fiber.Map{"err_code": "authError", "status_code": fiber.StatusUnauthorized, "err_message": authErr.Error()})
+	}
+
 	collection := database.Mg.Db.Collection("users")
 
 	user := new(models.CreateUser)
@@ -93,6 +99,13 @@ func CreateUser(ctx *fiber.Ctx) error {
 
 // Delete user
 func DeleteUser(ctx *fiber.Ctx) error {
+
+	authErr := utils.VerifyAuthentication(ctx)
+	if authErr != nil {
+		return ctx.Status(fiber.StatusUnauthorized).
+			JSON(fiber.Map{"err_code": "authError", "status_code": fiber.StatusUnauthorized, "err_message": authErr.Error()})
+	}
+
 	params := ctx.Params("id")
 
 	userID, err := primitive.ObjectIDFromHex(params)
@@ -110,6 +123,13 @@ func DeleteUser(ctx *fiber.Ctx) error {
 
 // Update user
 func UpdateUser(ctx *fiber.Ctx) error {
+
+	authErr := utils.VerifyAuthentication(ctx)
+	if authErr != nil {
+		return ctx.Status(fiber.StatusUnauthorized).
+			JSON(fiber.Map{"err_code": "authError", "status_code": fiber.StatusUnauthorized, "err_message": authErr.Error()})
+	}
+
 	params := ctx.Params("id")
 	userID, err := primitive.ObjectIDFromHex(params)
 	if err != nil {
@@ -142,6 +162,13 @@ func UpdateUser(ctx *fiber.Ctx) error {
 
 // Get user by ID
 func GetUserById(ctx *fiber.Ctx) error {
+
+	authErr := utils.VerifyAuthentication(ctx)
+	if authErr != nil {
+		return ctx.Status(fiber.StatusUnauthorized).
+			JSON(fiber.Map{"err_code": "authError", "status_code": fiber.StatusUnauthorized, "err_message": authErr.Error()})
+	}
+
 	params := ctx.Params("id")
 	_id, err := primitive.ObjectIDFromHex(params)
 	if err != nil {
@@ -159,6 +186,12 @@ func GetUserById(ctx *fiber.Ctx) error {
 
 // Get all users
 func GetAllUsers(ctx *fiber.Ctx) error {
+	authErr := utils.VerifyAuthentication(ctx)
+	if authErr != nil {
+		return ctx.Status(fiber.StatusUnauthorized).
+			JSON(fiber.Map{"err_code": "authError", "status_code": fiber.StatusUnauthorized, "err_message": authErr.Error()})
+	}
+
 	query := bson.D{{}}
 	cursor, err := database.Mg.Db.Collection("users").Find(ctx.Context(), query)
 	if err != nil {

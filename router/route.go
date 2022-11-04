@@ -2,13 +2,18 @@ package router
 
 import (
 	"blog/handler"
+	"blog/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
 func SetupRoutes(app *fiber.App) {
 
 	// Burada middleware ekleyebiliriz.
-	v1 := app.Group("/v1")
+	v1 := app.Group("/v1", middleware.CheckForAuth())
+	auth := app.Group("/auth")
+
+	auth.Post("/register", handler.Register)
+	auth.Post("/login", handler.Login)
 
 	// Route'larımız burada
 	v1.Get("/article", handler.GetAllArticles)
@@ -23,6 +28,5 @@ func SetupRoutes(app *fiber.App) {
 	v1.Get("/user/:id", handler.GetUserById)
 	v1.Delete("/user/:id", handler.DeleteUser)
 	v1.Put("/user/:id", handler.UpdateUser)
-	v1.Post("/register", handler.Register)
-	v1.Post("/login", handler.Login)
+
 }
