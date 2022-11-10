@@ -5,6 +5,5 @@
     "blog",
     "go"
   ],
-  "website": "http://github.com/heroku/go-blog",
-  "repository": "http://github.com/heroku/go-blog"
+  "repository": "https://github.com/mrtuuro/go-blog"
 }
