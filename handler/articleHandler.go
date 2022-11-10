@@ -5,6 +5,7 @@ import (
 	"blog/models"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -58,6 +59,9 @@ func GetSingleArticle(ctx *fiber.Ctx) error {
 
 // CreateArticle Inserting a new article to DB
 func CreateArticle(ctx *fiber.Ctx) error {
+	token := ctx.Locals("user").(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+	authorID := claims["id"].(string)
 	collection := database.Mg.Db.Collection("articles")
 
 	article := new(models.Article)
@@ -67,6 +71,7 @@ func CreateArticle(ctx *fiber.Ctx) error {
 
 	// ID'yi mongodb kendisi oluştursun.
 	article.ID = ""
+	article.Author = authorID
 
 	// Insert the record to DB
 	insertResult, err := collection.InsertOne(ctx.Context(), article)
