@@ -1,0 +1,10 @@
+{
+  "name": "Start on Heroku: Go",
+  "description": "Go Blog",
+  "keywords": [
+    "blog",
+    "go"
+  ],
+  "website": "http://github.com/heroku/go-blog",
+  "repository": "http://github.com/heroku/go-blog"
+}
