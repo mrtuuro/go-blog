@@ -17,7 +17,7 @@ var Mg MongoInstance
 
 // Database settings (later we will transfer these info to config)
 const dbName = "blog"
-const mongoURI = "mongodb://localhost:27017/" + dbName
+const mongoURI = "mongodb+srv://blog:blog@cluster.zjngin2.mongodb.net/" + dbName
 
 // Connect function configures the MongoDB client and establishes db connection.
 func Connect() error {
