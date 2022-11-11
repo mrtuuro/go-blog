@@ -1,9 +1,0 @@
-{
-  "name": "Start on Heroku: Go",
-  "description": "Go Blog",
-  "keywords": [
-    "blog",
-    "go"
-  ],
-  "repository": "https://github.com/mrtuuro/go-blog"
-}

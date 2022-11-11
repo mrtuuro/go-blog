@@ -5,9 +5,12 @@ import (
 	"blog/router"
 	"github.com/gofiber/fiber/v2"
 	"log"
+	"os"
 )
 
 func main() {
+	port := os.Getenv("PORT")
+
 	// Connect to database
 	if err := database.Connect(); err != nil {
 		log.Fatal(err) // TODO------------->>>>>  Buraya CUSTOM EXCEPTION uygulaması ekle !!
@@ -19,5 +22,5 @@ func main() {
 
 	router.SetupRoutes(app)
 
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(":" + port))
 }
